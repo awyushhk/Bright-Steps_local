@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Plus, User, Calendar, ClipboardList, AlertCircle,
   Trash2, CheckCircle, Activity, Stethoscope, Eye,
-  Sparkles, TrendingUp, ChevronDown, ChevronUp, History,
+  Sparkles, TrendingUp, ChevronDown, ChevronUp, Clock3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { calculateAge, formatDate } from "@/lib/utils";
@@ -510,7 +510,7 @@ export default function ParentDashboard() {
                         className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-gray-50 transition-colors text-sm text-gray-500 font-medium"
                       >
                         <span className="flex items-center gap-2">
-                          <History className="h-3.5 w-3.5" />
+                          <Clock3 className="h-3.5 w-3.5" />
                           Screening History ({childScreenings.length})
                         </span>
                         {expandedHistory[child.id]
