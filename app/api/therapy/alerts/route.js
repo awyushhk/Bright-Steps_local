@@ -1,16 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
-import { neon } from "@neondatabase/serverless";
+import { getAuthUser } from "@/lib/auth";
 import {
   getAllUnreadAlerts,
   getAlertsByPlan,
   markAlertRead,
 } from "@/lib/therapy-queries";
 
-const db = neon(process.env.DATABASE_URL);
-
 export async function GET(request) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const planId = searchParams.get("planId");
@@ -18,11 +15,11 @@ export async function GET(request) {
 
   try {
     if (unread === "true") {
-      const alerts = await getAllUnreadAlerts(db);
+      const alerts = await getAllUnreadAlerts();
       return Response.json(alerts);
     }
     if (planId) {
-      const alerts = await getAlertsByPlan(db, planId);
+      const alerts = await getAlertsByPlan(planId);
       return Response.json(alerts);
     }
     return Response.json([]);
@@ -33,12 +30,12 @@ export async function GET(request) {
 }
 
 export async function PATCH(request) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const { alertId } = await request.json();
-    await markAlertRead(db, alertId);
+    await markAlertRead(alertId);
     return Response.json({ success: true });
   } catch (err) {
     console.error("PATCH /api/therapy/alerts error:", err);

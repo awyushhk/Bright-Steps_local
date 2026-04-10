@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/useAuth";
 import {
   Card,
   CardContent,
@@ -167,7 +167,7 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function AnalyticsPage() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
   const [screenings, setScreenings] = useState([]);
   const [loading, setLoading] = useState(true);
 

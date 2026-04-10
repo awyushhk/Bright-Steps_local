@@ -1,12 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
-import { neon } from "@neondatabase/serverless";
+import { getAuthUser } from "@/lib/auth";
 import { getProgressByPlan, getLatestProgress } from "@/lib/therapy-queries";
 
-const db = neon(process.env.DATABASE_URL);
-
 export async function GET(request) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const planId = searchParams.get("planId");
@@ -16,10 +13,10 @@ export async function GET(request) {
 
   try {
     if (latest === "true") {
-      const progress = await getLatestProgress(db, planId);
+      const progress = await getLatestProgress(planId);
       return Response.json(progress);
     }
-    const progress = await getProgressByPlan(db, planId);
+    const progress = await getProgressByPlan(planId);
     return Response.json(progress);
   } catch (err) {
     console.error("GET /api/therapy/progress error:", err);

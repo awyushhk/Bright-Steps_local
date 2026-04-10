@@ -1,13 +1,13 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/useAuth";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 export default function ClinicianBackNav() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
 
-  if (!isLoaded || user?.publicMetadata?.role !== "clinician") return null;
+  if (!isLoaded || user?.role !== "clinician") return null;
 
   return (
     <Link

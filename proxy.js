@@ -1,21 +1,42 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import { jwtVerify } from 'jose';
 
-const isPublicRoute = createRouteMatcher([
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+const publicPaths = [
   '/',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/api/auth/set-role(.*)',
-]);
+  '/sign-in',
+  '/sign-up',
+  '/api/auth/login',
+  '/api/auth/register',
+];
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
+export async function proxy(req) {
+  const { pathname } = req.nextUrl;
+
+  const isPublic = publicPaths.some(p => pathname === p || pathname.startsWith(p + '/'));
+  if (isPublic) return NextResponse.next();
+
+  const token = req.cookies.get('auth_token')?.value;
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
   }
-});
+
+  try {
+    await jwtVerify(token, secret);
+    return NextResponse.next();
+  } catch {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
+  }
+}
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    '/dashboard/:path*',
+    '/api/children/:path*',
+    '/api/screenings/:path*',
+    '/api/therapy/:path*',
+    '/api/auth/me',
   ],
 };

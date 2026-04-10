@@ -1,20 +1,21 @@
 "use client";
 
-import { UserButton } from "@clerk/nextjs";
+import { useAuth } from "@/lib/useAuth";
 import Link from "next/link";
 import { Brain, Menu, X } from "lucide-react";
 import { useState } from "react";
 import ClinicianGuard from "./ClinicianGuard";
 
 const NAV_LINKS = [
-  { href: "/dashboard/clinician",           label: "Cases"     },
-  { href: "/dashboard/clinician/analytics", label: "Analytics" },
-  { href: "/dashboard/clinician/therapy-overview", label: "Therapy"  },
-  { href: "/dashboard/parent",              label: "Screen a Child"  },
+  { href: "/dashboard/clinician",                  label: "Cases"         },
+  { href: "/dashboard/clinician/analytics",        label: "Analytics"     },
+  { href: "/dashboard/clinician/therapy-overview", label: "Therapy"       },
+  { href: "/dashboard/parent",                     label: "Screen a Child"},
 ];
 
 export default function ClinicianDashboardLayout({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-blue-50">
@@ -48,21 +49,41 @@ export default function ClinicianDashboardLayout({ children }) {
             ))}
           </nav>
 
-          {/* Right side */}
-          <div className="flex items-center justify-end gap-3 flex-1">
-            <UserButton
-              afterSignOutUrl="/sign-in"
-              appearance={{ elements: { avatarBox: "h-9 w-9" } }}
-            />
-            {/* Hamburger — mobile only */}
+          {/* Desktop — Sign Out */}
+          <div className="hidden md:flex items-center justify-end gap-3 flex-1">
             <button
-              className="md:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              onClick={logout}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:text-red-500 hover:bg-red-50 border border-slate-200 hover:border-red-200 transition-all"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              Sign Out
+            </button>
+          </div>
+
+          {/* Mobile — Hamburger only */}
+          <div className="flex md:hidden items-center justify-end gap-3 flex-1">
+            <button
+              className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
+
         </div>
 
         {/* Mobile dropdown */}
@@ -78,6 +99,28 @@ export default function ClinicianDashboardLayout({ children }) {
                 {label}
               </Link>
             ))}
+            <div className="pt-1 border-t border-gray-100 mt-1">
+              <button
+                onClick={logout}
+                className="w-full text-left flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                Sign Out
+              </button>
+            </div>
           </div>
         )}
       </header>

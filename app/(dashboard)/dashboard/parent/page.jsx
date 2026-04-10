@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/useAuth";
 import { useRouter } from "next/navigation";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
@@ -109,7 +109,7 @@ const PROGRESS_CONFIG = {
 };
 
 export default function ParentDashboard() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
   const router = useRouter();
 
   const [children, setChildren]         = useState([]);
@@ -232,7 +232,7 @@ export default function ParentDashboard() {
       {/* Welcome */}
       <div>
         <h2 className="text-3xl font-bold mb-2">
-          Welcome, {user?.firstName || user?.emailAddresses[0]?.emailAddress}!
+          Welcome, {user?.name || user?.email}!
         </h2>
         <p className="text-gray-600">Manage your children and track their developmental screenings</p>
       </div>

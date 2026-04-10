@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, Users, ClipboardList, Shield, ChevronRight, Menu, X, Star, Target, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
-import { useUser, UserButton } from "@clerk/nextjs";
+import { useAuth } from "@/lib/useAuth";
 import {
   motion,
   useInView,
@@ -73,7 +73,7 @@ function ScrollReveal({ children, className, variants = fadeUp, custom, once = t
 export default function Home() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, logout } = useAuth();
   const isLoggedIn = isLoaded && !!user;
 
   /* Parallax scroll for hero image */
@@ -138,7 +138,7 @@ export default function Home() {
             {isLoggedIn ? (
               <>
                 <Button className="text-sm bg-indigo-600 hover:bg-indigo-700 rounded-xl px-5" onClick={() => router.push("/dashboard")}>Dashboard</Button>
-                <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: "h-9 w-9" } }} />
+                <Button variant="ghost" className="text-sm" onClick={logout}>Sign Out</Button>
               </>
             ) : (
               <>
@@ -209,7 +209,7 @@ export default function Home() {
         <motion.div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('https://plus.unsplash.com/premium_photo-1661696107834-b2630692aaeb?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`,
+            backgroundImage: `url('/images/hero.jpg')`,
             y: heroBgY,
             scale: 1.1,
           }}
@@ -361,7 +361,7 @@ export default function Home() {
                 transition={{ type: "spring", stiffness: 200 }}
               >
                 <motion.img
-                  src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=700&q=80"
+                  src="/images/about-asd.jpg"
                   alt="Parent with child"
                   className="w-full h-80 object-cover"
                   initial={{ scale: 1.15 }}
@@ -476,7 +476,7 @@ export default function Home() {
       <section className="relative py-24 overflow-hidden">
         <motion.div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=1600&q=80')` }}
+          style={{ backgroundImage: `url('/images/cta-banner.jpg')` }}
           initial={{ scale: 1.1 }}
           whileInView={{ scale: 1 }}
           transition={{ duration: 1.4, ease: "easeOut" }}

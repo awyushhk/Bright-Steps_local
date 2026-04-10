@@ -1,9 +1,9 @@
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUser } from '@/lib/auth';
 import { getScreeningById, getScreeningWithChild, updateScreening } from '@/lib/queries';
 
 export async function GET(request, { params }) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { screeningId } = await params;
 
@@ -17,8 +17,8 @@ export async function GET(request, { params }) {
 }
 
 export async function PATCH(request, { params }) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { screeningId } = await params;
   const body = await request.json();

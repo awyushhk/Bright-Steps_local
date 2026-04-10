@@ -1,15 +1,12 @@
-import { auth } from "@clerk/nextjs/server";
-import { neon } from "@neondatabase/serverless";
+import { getAuthUser } from "@/lib/auth";
 import {
   createTherapySession,
   getTherapySessionsByPlan,
 } from "@/lib/therapy-queries";
 
-const db = neon(process.env.DATABASE_URL);
-
 export async function GET(request) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
   const planId = searchParams.get("planId");
@@ -17,7 +14,7 @@ export async function GET(request) {
   if (!planId) return Response.json({ error: "planId required" }, { status: 400 });
 
   try {
-    const sessions = await getTherapySessionsByPlan(db, planId);
+    const sessions = await getTherapySessionsByPlan(planId);
     return Response.json(sessions, {
       headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=30" },
     });
@@ -28,15 +25,15 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const { userId } = await auth();
-  if (!userId) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const user = await getAuthUser();
+  if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await request.json();
-    const session = await createTherapySession(db, {
+    const session = await createTherapySession({
       planId: body.planId,
       childId: body.childId,
-      loggedBy: userId,
+      loggedBy: user.id,
       sessionDate: body.sessionDate,
       durationMinutes: body.durationMinutes,
       activities: body.activities ?? [],

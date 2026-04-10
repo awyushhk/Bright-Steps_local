@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@/lib/useAuth";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -109,7 +109,7 @@ function StatusPill({ status }) {
 
 // ── Main ───────────────────────────────────────────────────────────────────
 export default function ClinicianDashboard() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded } = useAuth();
   const router = useRouter();
 
   const [screenings, setScreenings] = useState([]);
@@ -210,8 +210,7 @@ export default function ClinicianDashboard() {
     return tabMatch && searchMatch;
   });
 
-  const doctorName =
-    user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0];
+  const doctorName = user?.name || user?.email?.split("@")[0];
 
   return (
     <div className="space-y-8">
