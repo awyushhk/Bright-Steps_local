@@ -1,6 +1,6 @@
-# Database ER Diagram (Autism Screening System Segregation)
+# Database ER Diagram (Analytics & Risk Segregation Module)
 
-Here is the Entity-Relationship Diagram detailing the tables we created and modified over the last few hours to segregate risk data and track state-wise progression.
+Here is the Entity-Relationship Diagram detailing the specialized Analytics and Risk Segregation module. This architecture was built as an independent feature extension on top of the core application to specifically handle the segregation of child risk data, month-over-month progression tracking, and state-wise performance rankings.
 
 ```mermaid
 erDiagram
