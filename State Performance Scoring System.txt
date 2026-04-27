@@ -1,0 +1,31 @@
+
+Early Action Score
+------------------
+Action taken in February (Month 1): +10 points
+Action delayed until March (Month 2): 0 points
+Action delayed until April (Month 3): -5 points (Penalty for late intervention)
+Never Actioned: -10 points (Severe penalty for neglect)
+
+Improvement Score
+-----------------
+1. Base Outcome Points: 
+Cured (+5), 
+Under Progress (+3), 
+Stagnant (0), 
+Regressing (-3), 
+Shifted to MEDIUM Risk (+2), 
+Shifted to HIGH Risk (-5).
+
+2. "No Action" Penalty: 
+If a month passes with no action taken, that child immediately gets -2 points for the month.
+
+3. Risk Shift Bonus/Penalty: 
+If the child actually drops a risk tier (e.g., High to Medium), they get a massive +4 point bonus. If they jump from High all the way to Low, they get an +8 point bonus. Conversely, if they worsen from Low to High, they get an -8 point penalty.
+
+Service Quality Score
+---------------------
+Positive Consistency: Every "Cured" or "Under Progress" log gives the state +5 points.
+Negative Consistency: Every "Regressing" or "Shifted to HIGH Risk" log penalizes the state -5 points.
+
+
+Total Score: The final leaderboard ranking is simply Early Action + Improvement + Service Quality.

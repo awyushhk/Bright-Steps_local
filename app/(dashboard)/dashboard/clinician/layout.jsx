@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/dashboard/clinician",                  label: "Cases"         },
   { href: "/dashboard/clinician/analytics",        label: "Analytics"     },
   { href: "/dashboard/clinician/therapy-overview", label: "Therapy"       },
+  { href: "/dashboard/clinician/state-cases",      label: "State Cases"   },
   { href: "/dashboard/parent",                     label: "Screen a Child"},
 ];
 

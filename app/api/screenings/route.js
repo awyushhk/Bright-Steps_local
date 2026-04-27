@@ -12,7 +12,7 @@ import { computeFinalRisk } from "@/lib/riskEngine";
 import { geminiModel } from "@/lib/gemini"; // ✅ import directly
 
 // ✅ Move analysis logic here instead of calling /api/analyze-video
-async function analyzeVideoWithGemini(videoUrl, category, childAge) {
+async function analyzeVideoWithGemini(videoUrl, category, childAge, retries = 3) {
   const ANALYSIS_PROMPT = `You are an expert child development specialist analyzing a short video of a child for early autism screening purposes.
 
 Analyze this video carefully and rate the following behavioral indicators on a scale of 0-10, where:
@@ -58,21 +58,53 @@ Respond ONLY with valid JSON, no markdown:
   const videoBase64 = Buffer.from(videoBuffer).toString("base64");
   const contentType = "video/mp4";
 
-  const result = await geminiModel.generateContent([
-    {
-      inlineData: {
-        mimeType: contentType,
-        data: videoBase64,
-      },
-    },
-    {
-      text: `${ANALYSIS_PROMPT}\n\nContext: "${category}" video, child age: ${childAge || "unknown"} months.`,
-    },
-  ]);
+  // Retry logic for transient failures (503, 429, etc.)
+  let lastError;
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const result = await geminiModel.generateContent([
+        {
+          inlineData: {
+            mimeType: contentType,
+            data: videoBase64,
+          },
+        },
+        {
+          text: `${ANALYSIS_PROMPT}\n\nContext: "${category}" video, child age: ${childAge || "unknown"} months.`,
+        },
+      ]);
 
-  const responseText = result.response.text();
-  const cleaned = responseText.replace(/```json|```/g, "").trim();
-  return JSON.parse(cleaned);
+      const responseText = result.response.text();
+      const cleaned = responseText.replace(/```json|```/g, "").trim();
+      return JSON.parse(cleaned);
+    } catch (err) {
+      lastError = err;
+      
+      // Check if error is transient (503 Service Unavailable, 429 Rate Limited)
+      const isTransient = 
+        err.message?.includes("503") || 
+        err.message?.includes("429") ||
+        err.message?.includes("high demand") ||
+        err.message?.includes("overloaded");
+      
+      if (!isTransient || attempt === retries - 1) {
+        // Permanent error or last retry attempt - throw immediately
+        throw err;
+      }
+
+      // Exponential backoff: 1s, 2s, 4s
+      const delayMs = Math.pow(2, attempt) * 1000;
+      console.log(
+        `⏳ Gemini API temporarily unavailable (${err.message}). ` +
+        `Retry ${attempt + 1}/${retries - 1} in ${delayMs}ms...`
+      );
+      
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  // Should not reach here, but as a fallback
+  throw lastError || new Error("Failed to analyze video after retries");
 }
 
 export async function GET(request) {
@@ -131,12 +163,32 @@ export async function POST(request) {
             console.log(`✅ Analysis done for ${video.category}:`, analysis.indicators);
             return { ...analysis, videoId: video.id, category: video.category };
           } catch (err) {
-            console.error(`❌ Failed to analyze video ${video.id}:`, err.message);
-            return null;
+            const isTransient = 
+              err.message?.includes("503") || 
+              err.message?.includes("429") ||
+              err.message?.includes("high demand") ||
+              err.message?.includes("overloaded") ||
+              err.message?.includes("temporarily");
+            
+            console.error(
+              `❌ Failed to analyze video ${video.id}: ${err.message}`,
+              isTransient ? "(Transient - retry later)" : "(Permanent error)"
+            );
+            
+            return {
+              videoId: video.id,
+              category: video.category,
+              error: isTransient 
+                ? "Gemini API temporarily unavailable. Please try again in a few moments."
+                : `Failed to analyze video: ${err.message}`,
+              isTransientError: isTransient,
+            };
           }
         });
 
-        videoAnalyses = (await Promise.all(analysisPromises)).filter(Boolean);
+        videoAnalyses = (await Promise.all(analysisPromises)).filter(
+          (result) => result && !result.error
+        );
 
         if (videoAnalyses.length > 0) {
           const indicatorKeys = [
